@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="styles.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Midibian</title>
+    <script src="three.min.js"></script>
+    <script type="module" src="/main.js" defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div class="app-container">
+      <header>
+        <h1>Midibian</h1>
+        <p>Use your mouse, touch, keyboard or MIDI controller to play</p>
+        <div class="controls">
+          <select id="midi-select" class="instrument-select">
+            <option value="">Loading MIDI inputs...</option>
+          </select>
+          <select id="instrument-select" class="instrument-select">
+            <option value="0">Acoustic Grand Piano</option>
+            <option value="4">Electric Piano 1</option>
+            <option value="6">Harpsichord</option>
+            <option value="16">Drawbar Organ</option>
+            <option value="19">Church Organ</option>
+            <option value="24">Acoustic Guitar (Nylon)</option>
+            <option value="27">Electric Guitar (Clean)</option>
+            <option value="32">Acoustic Bass</option>
+            <option value="40">Violin</option>
+            <option value="48">String Ensemble 1</option>
+            <option value="56">Trumpet</option>
+            <option value="64">Soprano Sax</option>
+            <option value="73">Flute</option>
+            <option value="80">Lead 1 (Square)</option>
+            <option value="88">Pad 1 (New Age)</option>
+          </select>
+          <div class="volume-control">
+            <span>Vol</span>
+            <input type="range" id="volume-slider" min="0" max="10" step="0.1" value="3.0">
+          </div>
+          <div id="sustain-pedal" class="pedal">Sustain Pedal (Spacebar)</div>
+          <div id="toggle-visuals" class="pedal active">Visuals: 3D FX</div>
+        </div>
+      </header>
+      
+      <main class="piano-wrapper">
+        <div class="track-container">
+          <canvas id="track-canvas"></canvas>
+        </div>
+        <div id="keyboard" class="keyboard"></div>
+      </main>
+    </div>
+  </body>
+</html>
