@@ -9,13 +9,14 @@ use midi::MidiState;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    // Hardware acceleration is ENABLED by default for smooth 3D FX / WebGL.
-    // If you experience KMS / NVIDIA DRM permission denied errors on Linux, 
-    // run the app with PIANO_NO_HW_ACCEL=1 to use software rendering.
+    // Fix for KMS / NVIDIA DRM permission denied errors on Linux:
+    // Disabling DMABUF avoids the GBM buffer crash but preserves GPU WebGL acceleration.
+    std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
+    
+    // Only completely disable Hardware Compositing if falling back via Env Var
     if std::env::var("PIANO_NO_HW_ACCEL").is_ok() {
-        std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
         std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
-        println!("Hardware acceleration explicitly disabled via PIANO_NO_HW_ACCEL");
+        println!("Hardware acceleration completely disabled via PIANO_NO_HW_ACCEL");
     }
     
     let audio_state = match AudioState::new() {
