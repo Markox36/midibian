@@ -11,6 +11,23 @@ const keyElements = new Map();
 const activeNotes = new Set();
 const backendNotes = new Set();
 
+const COLORS = [
+    { name: 'blue', hex: '#3b82f6', hexNum: 0x3b82f6 },
+    { name: 'purple', hex: '#8b5cf6', hexNum: 0x8b5cf6 },
+    { name: 'pink', hex: '#ec4899', hexNum: 0xec4899 }
+];
+
+function getNoteColorIdx(midiNote) {
+    const ratio = (midiNote - 21) / 88;
+    if (ratio < 0.35) return 0;
+    if (ratio < 0.70) return 1;
+    return 2;
+}
+
+function getNoteColor(midiNote) {
+    return COLORS[getNoteColorIdx(midiNote)];
+}
+
 // Synthesia Track
 const trackNotes = [];
 const activeTrackNotes = new Map();
@@ -120,7 +137,10 @@ function triggerNoteOn(midiNote, velocity) {
     activeNotes.add(midiNote);
 
     const el = keyElements.get(midiNote);
-    if (el) el.classList.add("active");
+    if (el) {
+        el.classList.add("active");
+        el.classList.add("active-" + getNoteColor(midiNote).name);
+    }
 
     if (visualMode > 0) {
         const tn = new TrackNote(midiNote, performance.now());
@@ -138,7 +158,9 @@ function triggerNoteOff(midiNote) {
     activeNotes.delete(midiNote);
 
     const el = keyElements.get(midiNote);
-    if (el && !backendNotes.has(midiNote)) el.classList.remove("active");
+    if (el && !backendNotes.has(midiNote)) {
+        el.classList.remove("active", "active-blue", "active-purple", "active-pink");
+    }
 
     const tn = activeTrackNotes.get(midiNote);
     if (tn) {
@@ -190,7 +212,10 @@ async function setupMidiListener() {
         if (status === 1) {
             backendNotes.add(note);
             const el = keyElements.get(note);
-            if (el) el.classList.add("active");
+            if (el) {
+                el.classList.add("active");
+                el.classList.add("active-" + getNoteColor(note).name);
+            }
 
             if (visualMode > 0 && !activeTrackNotes.has(note)) {
                 const tn = new TrackNote(note, performance.now());
@@ -200,7 +225,9 @@ async function setupMidiListener() {
         } else if (status === 0) {
             backendNotes.delete(note);
             const el = keyElements.get(note);
-            if (el && !activeNotes.has(note)) el.classList.remove("active");
+            if (el && !activeNotes.has(note)) {
+                el.classList.remove("active", "active-blue", "active-purple", "active-pink");
+            }
 
             const tn = activeTrackNotes.get(note);
             if (tn && !activeNotes.has(note)) {
@@ -244,8 +271,11 @@ let canvas2D, ctx2D;
 let cachedW = 0, cachedH = 0;
 
 // Pre-allocated rect buffers for batched 2D rendering (avoids per-frame GC pressure)
-const whiteRects2D = new Float32Array(MAX_NOTES * 4);
-const blackRects2D = new Float32Array(MAX_NOTES * 4);
+const rects2D = [
+    new Float32Array(MAX_NOTES * 4), // blue
+    new Float32Array(MAX_NOTES * 4), // purple
+    new Float32Array(MAX_NOTES * 4)  // pink
+];
 
 function emitParticle(x, y, r, g, b, count) {
     for (let i = 0; i < count; i++) {
@@ -497,7 +527,8 @@ function animate(time) {
         }
 
         // Collect note rects into pre-allocated typed arrays (no GC)
-        let wCount = 0, bCount = 0;
+        let counts = [0, 0, 0];
+        
         for (let i = trackNotes.length - 1; i >= 0; i--) {
             const noteObj = trackNotes[i];
             const timeActive = time - noteObj.timeCreated;
@@ -524,30 +555,20 @@ function animate(time) {
             const rw = Math.max(((posPercent.w / 100) * W - 2) | 0, 1);
             const rh = Math.max(height | 0, 1);
 
-            if (posPercent.isBlack) {
-                blackRects2D[bCount++] = rx;
-                blackRects2D[bCount++] = ry;
-                blackRects2D[bCount++] = rw;
-                blackRects2D[bCount++] = rh;
-            } else {
-                whiteRects2D[wCount++] = rx;
-                whiteRects2D[wCount++] = ry;
-                whiteRects2D[wCount++] = rw;
-                whiteRects2D[wCount++] = rh;
-            }
+            const colorIdx = getNoteColorIdx(noteObj.midiNote);
+            rects2D[colorIdx][counts[colorIdx]++] = rx;
+            rects2D[colorIdx][counts[colorIdx]++] = ry;
+            rects2D[colorIdx][counts[colorIdx]++] = rw;
+            rects2D[colorIdx][counts[colorIdx]++] = rh;
         }
 
         // Single fillStyle per color group — browser batches these as one GPU draw call
-        if (wCount > 0) {
-            ctx2D.fillStyle = '#60a5fa';
-            for (let i = 0; i < wCount; i += 4) {
-                ctx2D.fillRect(whiteRects2D[i], whiteRects2D[i + 1], whiteRects2D[i + 2], whiteRects2D[i + 3]);
-            }
-        }
-        if (bCount > 0) {
-            ctx2D.fillStyle = '#f472b6';
-            for (let i = 0; i < bCount; i += 4) {
-                ctx2D.fillRect(blackRects2D[i], blackRects2D[i + 1], blackRects2D[i + 2], blackRects2D[i + 3]);
+        for (let c=0; c<3; c++) {
+            if (counts[c] > 0) {
+                ctx2D.fillStyle = COLORS[c].hex;
+                for (let i = 0; i < counts[c]; i += 4) {
+                    ctx2D.fillRect(rects2D[c][i], rects2D[c][i + 1], rects2D[c][i + 2], rects2D[c][i + 3]);
+                }
             }
         }
 
@@ -590,9 +611,13 @@ function animate(time) {
         dummy.updateMatrix();
 
         // Reuse pre-allocated color object — no allocation per frame
-        _colorObj.setHex(noteObj.active
-            ? (posPercent.isBlack ? 0xf472b6 : 0x60a5fa)
-            : (posPercent.isBlack ? 0xd946ef : 0x3b82f6));
+        const noteC = getNoteColor(noteObj.midiNote);
+        if (noteObj.active) {
+            _colorObj.setHex(noteC.hexNum);
+        } else {
+            _colorObj.setHex(noteC.hexNum);
+            _colorObj.multiplyScalar(0.7);
+        }
 
         if (instanceIdx < MAX_NOTES) {
             notesMesh.setMatrixAt(instanceIdx, dummy.matrix);
@@ -719,28 +744,15 @@ window.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    const toggleVisualsEl = document.getElementById('toggle-visuals');
-    if (toggleVisualsEl) {
-        toggleVisualsEl.addEventListener('click', () => {
-            visualMode = (visualMode + 1) % 3;
-
-            toggleVisualsEl.classList.remove('active', 'intermediate');
-
-            if (visualMode === 2) {
-                toggleVisualsEl.classList.add('active');
-                toggleVisualsEl.textContent = "Visuals: 3D FX";
-                if (renderer) renderer.domElement.style.opacity = "1";
-            } else if (visualMode === 1) {
-                toggleVisualsEl.classList.add('intermediate');
-                toggleVisualsEl.textContent = "Visuals: 2D FX";
-                if (renderer) renderer.domElement.style.opacity = "1";
-            } else {
-                toggleVisualsEl.textContent = "Visuals: OFF";
+    const visualsSelect = document.getElementById('visuals-select');
+    if (visualsSelect) {
+        visualsSelect.addEventListener('change', (e) => {
+            visualMode = parseInt(e.target.value, 10);
+            if (visualMode === 0) {
                 if (renderer) {
                     renderer.clear();
                     renderer.domElement.style.opacity = "0";
                 }
-
                 trackNotes.length = 0;
                 activeTrackNotes.clear();
             }
@@ -748,11 +760,19 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     const volumeSlider = document.getElementById('volume-slider');
+    const volumeBottomSlider = document.getElementById('volume-bottom-slider');
+    
+    function updateVolume(val) {
+        if(volumeSlider) volumeSlider.value = val;
+        if(volumeBottomSlider) volumeBottomSlider.value = val;
+        invoke("set_volume", { volume: Number.parseFloat(val) / 100 });
+    }
+
     if (volumeSlider) {
         setTimeout(() => invoke("set_volume", { volume: Number.parseFloat(volumeSlider.value) / 100 }), 500);
-
-        volumeSlider.addEventListener('input', (e) => {
-            invoke("set_volume", { volume: Number.parseFloat(e.target.value) / 100 });
-        });
+        volumeSlider.addEventListener('input', (e) => updateVolume(e.target.value));
+    }
+    if (volumeBottomSlider) {
+        volumeBottomSlider.addEventListener('input', (e) => updateVolume(e.target.value));
     }
 });

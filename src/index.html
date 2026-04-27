@@ -7,50 +7,170 @@
     <title>Midibian</title>
     <script src="three.min.js"></script>
     <script type="module" src="/main.js" defer></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   </head>
   <body>
     <div class="app-container">
-      <header>
-        <h1>Midibian</h1>
-        <p>Use your mouse, touch, keyboard or MIDI controller to play</p>
-        <div class="controls">
-          <select id="midi-select" class="instrument-select">
-            <option value="">Loading MIDI inputs...</option>
-          </select>
-          <select id="instrument-select" class="instrument-select">
-            <option value="0">Acoustic Grand Piano</option>
-            <option value="4">Electric Piano 1</option>
-            <option value="6">Harpsichord</option>
-            <option value="16">Drawbar Organ</option>
-            <option value="19">Church Organ</option>
-            <option value="24">Acoustic Guitar (Nylon)</option>
-            <option value="27">Electric Guitar (Clean)</option>
-            <option value="32">Acoustic Bass</option>
-            <option value="40">Violin</option>
-            <option value="48">String Ensemble 1</option>
-            <option value="56">Trumpet</option>
-            <option value="64">Soprano Sax</option>
-            <option value="73">Flute</option>
-            <option value="80">Lead 1 (Square)</option>
-            <option value="88">Pad 1 (New Age)</option>
-          </select>
-          <div class="volume-control">
-            <span>Vol</span>
-            <input type="range" id="volume-slider" min="0" max="100" step="1" value="50">
+
+      <!-- ── Top navbar ── -->
+      <header class="navbar">
+        <div class="navbar-brand">
+          <div class="brand-logo-icon">
+            <svg viewBox="0 0 36 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="0" y="10" width="5" height="22" rx="2" fill="#a78bfa" />
+              <rect x="7" y="4" width="5" height="28" rx="2" fill="#8b5cf6" />
+              <rect x="14" y="10" width="5" height="20" rx="2" fill="#d8b4fe" />
+              <rect x="21" y="4" width="5" height="28" rx="2" fill="#ffffff" />
+              <rect x="28" y="10" width="5" height="22" rx="2" fill="#ffffff" />
+            </svg>
           </div>
-          <div id="sustain-pedal" class="pedal">Sustain Pedal (Spacebar)</div>
-          <div id="toggle-visuals" class="pedal active">Visuals: 3D FX</div>
+          <div class="brand-info">
+            <span class="brand-title">MIDI PIANO</span>
+            <span class="brand-sub">Piano MIDI con sonidos y visualización</span>
+          </div>
+        </div>
+
+        <nav class="navbar-controls">
+          <div class="ctrl-group">
+            <label class="ctrl-label" for="instrument-select">INSTRUMENTO</label>
+            <div class="select-wrap">
+              <select id="instrument-select" class="ctrl-select">
+                <option value="0">Acoustic Grand Piano</option>
+                <option value="4">Electric Piano 1</option>
+                <option value="6">Harpsichord</option>
+                <option value="16">Drawbar Organ</option>
+                <option value="19">Church Organ</option>
+                <option value="24">Acoustic Guitar (Nylon)</option>
+                <option value="27">Electric Guitar (Clean)</option>
+                <option value="32">Acoustic Bass</option>
+                <option value="40">Violin</option>
+                <option value="48">String Ensemble 1</option>
+                <option value="56">Trumpet</option>
+                <option value="64">Soprano Sax</option>
+                <option value="73">Flute</option>
+                <option value="80">Lead 1 (Square)</option>
+                <option value="88">Pad 1 (New Age)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="ctrl-group">
+            <label class="ctrl-label">VOLUMEN</label>
+            <div class="volume-slider-wrap glass-panel">
+              <svg class="vol-icon" viewBox="0 0 20 20" fill="gray">
+                <path d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z"/>
+              </svg>
+              <input type="range" id="volume-slider" min="0" max="100" step="1" value="50">
+              <svg class="bell-icon" viewBox="0 0 24 24" fill="none" stroke="gray">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+            </div>
+          </div>
+
+          <div class="ctrl-group">
+            <label class="ctrl-label">SOSTENIDO</label>
+            <div class="sustain-wrap glass-panel">
+              <button id="sustain-pedal" class="sustain-btn">ON</button>
+              <div class="sustain-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="ctrl-group">
+            <label class="ctrl-label">VISUALES</label>
+            <div class="select-wrap">
+              <select id="visuals-select" class="ctrl-select small-select">
+                <option value="2">3D FX</option>
+                <option value="1">2D FX</option>
+                <option value="0">OFF</option>
+              </select>
+            </div>
+          </div>
+        </nav>
+
+        <div class="navbar-actions">
+          <button class="icon-btn" title="Ajustes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+            </svg>
+          </button>
+          <button class="icon-btn" title="Menú">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <line x1="3" y1="6"  x2="21" y2="6"/>
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
         </div>
       </header>
-      
+
+      <!-- ── Piano + visualizer ── -->
       <main class="piano-wrapper">
+        <div class="equalizer-bg"></div>
         <div class="track-container" id="track-container">
-          <canvas id="track-canvas"></canvas>
-          <canvas id="track-canvas-2d" style="position: absolute; top:0; left:0; width:100%; height:100%; display:none; pointer-events:none; z-index: 10;"></canvas>
+          <canvas id="track-canvas-2d" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;"></canvas>
         </div>
         <div id="keyboard" class="keyboard"></div>
       </main>
+
+      <!-- ── Bottom status bar ── -->
+      <footer class="statusbar">
+        <div class="statusbar-left">
+          <div class="midi-indicator">
+            <span class="status-dot" id="midi-dot"></span>
+            <span class="status-label" id="midi-status-text">CONECTADO</span>
+          </div>
+          <div class="ctrl-group inline-group">
+            <label class="ctrl-label">MIDI INPUT</label>
+            <div class="select-wrap">
+              <select id="midi-select" class="ctrl-select dark-select">
+                <option value="">Dispositivo MIDI</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="statusbar-center">
+          <div class="transport-controls">
+            <button class="transport-btn record" id="btn-record" title="Grabar">
+              <span class="t-dot"></span>
+            </button>
+            <button class="transport-btn play" id="btn-play" title="Play">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            </button>
+            <button class="transport-btn stop" id="btn-stop" title="Stop">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <rect x="6" y="6" width="12" height="12"/>
+              </svg>
+            </button>
+          </div>
+          
+          <div class="bpm-widget">
+            <div class="bpm-display">
+              <span class="bpm-val" id="bpm-val">120</span>
+              <span class="bpm-lbl">BPM</span>
+            </div>
+            <div class="bpm-btns">
+              <button class="bpm-btn" id="bpm-minus">−</button>
+              <button class="bpm-btn" id="bpm-plus">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="statusbar-right">
+          <svg class="vol-icon" viewBox="0 0 20 20" fill="gray">
+            <path d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414z"/>
+          </svg>
+          <input type="range" id="volume-bottom-slider" min="0" max="100" step="1" value="50" class="footer-volume">
+        </div>
+      </footer>
+
     </div>
   </body>
 </html>
