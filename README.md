@@ -1,6 +1,6 @@
-![Midibian](banner.png)
-
 # Midibian
+
+![Midibian](banner.png)
 
 Teclado MIDI interactivo de escritorio construido con **Tauri 2**, **Rust** y **WebGL**. El backend en Rust gestiona la síntesis de audio mediante FluidSynth con latencia mínima, mientras que el frontend renderiza visualizaciones en tiempo real usando Three.js (modo 3D) y Canvas 2D nativo (modo Synthesia).
 
