@@ -51,7 +51,8 @@ pub fn run() {
             commands::change_instrument,
             commands::set_volume,
             commands::list_midi_ports,
-            commands::select_midi_port
+            commands::select_midi_port,
+            commands::diag_log
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

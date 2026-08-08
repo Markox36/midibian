@@ -34,6 +34,11 @@ pub fn list_midi_ports() -> Vec<String> {
 }
 
 #[tauri::command]
+pub fn diag_log(msg: String) {
+    println!("[DIAG] {}", msg);
+}
+
+#[tauri::command]
 pub fn select_midi_port(
     port_name: String,
     app_handle: tauri::AppHandle,
